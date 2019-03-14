@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- use Spring default values -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%clr(%d{ISO8601}){faint} %clr(%X{SYNC_ID:-}){yellow} %clr(%5p) %clr([Sync-Gateway,%X{X-B3-TraceId:-},%X{X-B3-SpanId:-},%X{X-Span-Export:-}]){blue} %clr(${PID:- }){magenta} %clr(---){faint} %clr([%thread]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%rEx}"/>
+
+    <appender name="Console"
+              class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>${CONSOLE_LOG_PATTERN}</Pattern>
+        </layout>
+    </appender>
+
+    <!-- LOG everything at INFO level -->
+    <root level="info">
+        <appender-ref ref="Console"/>
+    </root>
+
+    <!-- LOG "com.servicemax*" at INFO level -->
+    <logger name="com.example" level="INFO" additivity="false">
+        <appender-ref ref="Console"/>
+    </logger>
+
+</configuration>

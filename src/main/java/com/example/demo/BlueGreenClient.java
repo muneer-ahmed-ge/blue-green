@@ -1,6 +1,7 @@
 package com.example.demo;
 
 
+import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 
 import java.util.List;
@@ -10,9 +11,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-public class SyncTest {
+public class BlueGreenClient {
 
-    public static final String HOST = "https://bgd.servicemax-api.com/bgdemo";
+    public static final String HOST = "https://bgd.servicemax-api.com/bgdemo/v1";
+
+//     public static final String HOST = "http://localhost:8080/sync/v1";
 
     public static void main(String[] args) throws Exception {
         while (true) {
@@ -25,13 +28,18 @@ public class SyncTest {
     private static void runSync() throws Exception {
         RestTemplate template = new RestTemplate();
         ResponseEntity<String> response =
-                template.postForEntity(HOST + "/sync", "", String.class);
+                template.postForEntity(HOST + "/initiate", "", String.class);
         assert response.getStatusCodeValue() == 200;
+
         System.out.println(response.getBody());
         List<String> cookies = response.getHeaders().get("Set-Cookie");
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Cookie", cookies.get(0));
-        headers.add("Cookie", cookies.get(1));
+        cookies.forEach(e -> headers.add("Cookie", e));
+
+        List<String> hostHeader = response.getHeaders().get("Host");
+        if (hostHeader != null && !hostHeader.isEmpty()) {
+            headers.add("Host", hostHeader.iterator().next());
+        }
         boolean flag = true;
         while (flag) {
             response = template.exchange(HOST + "/status",
@@ -45,5 +53,11 @@ public class SyncTest {
             }
             Thread.sleep(5 * 1000);
         }
+
+        response = template.exchange(HOST + "/logout",
+                DELETE,
+                new HttpEntity<String>(headers),
+                String.class);
+        System.out.println(response.getBody());
     }
 }
